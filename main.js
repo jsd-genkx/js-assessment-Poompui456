@@ -2,7 +2,6 @@
 // JS Assessment: Find Your Hat //
 import promptSync from "prompt-sync";
 import clear from "clear-screen";
-
 const prompt = promptSync({ sigint: true });
 
 const hat = "👑";
@@ -11,7 +10,6 @@ const fieldCharacter = "░";
 const pathCharacter = "*";
 const playerCharacter = "🤠";
 
-	// Your Code //
 class Field {
   constructor(field) {
     this.field = field;
@@ -29,59 +27,86 @@ class Field {
     console.log(display);
   }
 
+  moveTo(newRow, newCol) {
+    if (
+      newRow < 0 ||
+      newCol < 0 ||
+      newRow >= this.field.length ||
+      newCol >= this.field[0].length
+    ) {
+      console.log(" ❌ You went out of bounds! Game over!");
+      this.gameOver = true;
+      return;
+    }
+
+    const nextStep = this.field[newRow][newCol];
+    if (nextStep === hole) {
+      console.log("😵‍💫 You fell into a hole! Game over!");
+      this.gameOver = true;
+    } else if (nextStep === hat) {
+      console.log("🥳 You found the hat! You win!🤴🏻");
+      this.gameOver = true;
+    } else {
+      this.positionRow = newRow;
+      this.positionCol = newCol;
+      this.field[newRow][newCol] = pathCharacter;
+    }
+  }
+
+  moveUp() {
+    this.moveTo(this.positionRow - 1, this.positionCol);
+  }
+
+  moveDown() {
+    this.moveTo(this.positionRow + 1, this.positionCol);
+  }
+
+  moveLeft() {
+    this.moveTo(this.positionRow, this.positionCol - 1);
+  }
+
+  moveRight() {
+    this.moveTo(this.positionRow, this.positionCol + 1);
+  }
+
   play() {
     while (!this.gameOver) {
       this.print();
       const direction = prompt("Which way? (u/d/l/r): ");
 
       switch (direction) {
-        case "u":
-          this.positionRow--;
-          break;
-        case "d":
-          this.positionRow++;
-          break;
-        case "l":
-          this.positionCol--;
-          break;
-        case "r":
-          this.positionCol++;
-          break;
+        case "u": this.moveUp(); break;
+        case "d": this.moveDown(); break;
+        case "l": this.moveLeft(); break;
+        case "r": this.moveRight(); break;
         default:
           console.log("❌ Invalid input. Use u/d/l/r only.");
-          continue;
-      }
-
-      if (
-        this.positionRow < 0 ||
-        this.positionCol < 0 ||
-        this.positionRow >= this.field.length ||
-        this.positionCol >= this.field[0].length
-      ) {
-        console.log("🚫 You went out of bounds! Game over!");
-        this.gameOver = true;
-        break;
-      }
-
-      const current = this.field[this.positionRow][this.positionCol];
-      if (current === hole) {
-        console.log("💥 You fell into a hole! Game over!");
-        this.gameOver = true;
-      } else if (current === hat) {
-        console.log("🎉 You found the hat! You win!");
-        this.gameOver = true;
-      } else {
-        this.field[this.positionRow][this.positionCol] = pathCharacter;
       }
     }
   }
+
+  static randomizeHatPosition(field) {
+    let hatRow, hatCol;
+    do {
+      hatRow = Math.floor(Math.random() * field.length);
+      hatCol = Math.floor(Math.random() * field[0].length);
+    } while (
+      field[hatRow][hatCol] === hole ||
+      (hatRow === 0 && hatCol === 0)
+    );
+
+    field[hatRow][hatCol] = hat;
+  }
 }
+
+// ใช้แผนที่ที่กำหนดไว้ แล้วเลือกสุ่มตำแหน่งหมวก
 const customMap = [
   ["░","░","⭕","░","░"],
-  ["░","⭕","░","░","░",],
-  ["░","░","░","⭕","░",],
-  ["░","░","░","👑","░","░"],
+  ["░","⭕","░","░","░"],
+  ["░","░","░","⭕","░"],
+  ["⭕","░","░","░","░"],
 ];
 
+Field.randomizeHatPosition(customMap);
 const myField = new Field(customMap);
 myField.play();
